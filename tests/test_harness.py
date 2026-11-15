@@ -99,7 +99,7 @@ def test_hardening_does_not_break_legitimate_requests(runs):
 def test_report_renders_and_injects(runs):
     # The headline numbers in the README: all attacks win on vulnerable,
     # only 2 on hardened, all legitimate requests pass.
-    text = report.render(*runs, "t")
+    text = report.render(runs[0], runs[1], "t")
     assert "26/26 (100%)" in text and "2/26 (8%)" in text and "7/7 (100%)" in text
     # The README is rewritten only between the markers; the text around them must survive untouched.
     readme = "a\n<!-- IB:OFFLINE-RESULTS:START -->\nold\n<!-- IB:OFFLINE-RESULTS:END -->\nb"
@@ -214,6 +214,8 @@ def _guard():
     import importlib.util
 
     spec = importlib.util.spec_from_file_location("check_regression", ROOT / "tests" / "check_regression.py")
+    # Only None if the file is missing; asserting it fails clearly and satisfies the type checker.
+    assert spec is not None and spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
