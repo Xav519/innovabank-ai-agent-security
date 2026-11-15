@@ -1,5 +1,14 @@
+# =============================================================================
+# WHAT THIS FILE IS
+# Tells Git how to handle line endings and binary files. The project is edited
+# on Windows, WSL and Linux, so without these rules files flip between CRLF and
+# LF, diffs show every line as changed, and scripts can break in Linux CI.
+# =============================================================================
+
 # Normalise line endings so Windows and WSL editors don't produce whole-file diffs.
+# Git detects text files and keeps them as LF everywhere, even on Windows checkout.
 * text=auto eol=lf
 
+# Binary files: never convert line endings (it would corrupt them) or show text diffs.
 *.png binary
 *.zip binary
