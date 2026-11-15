@@ -1,3 +1,11 @@
+# =============================================================================
+# pyproject.toml: project settings in one place
+#
+# Describes the project (name, version, Python 3.11+) and configures its tools:
+# pytest (tests), pyright (editor imports) and ruff (linting). Each tool reads
+# only its own [section]. Dependencies are in requirements-dev.txt, not here.
+# =============================================================================
+
 [project]
 name = "innovabank"
 version = "1.0.0"
