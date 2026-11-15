@@ -1,4 +1,6 @@
 """AwsStore and KmsSigner against moto, so the DynamoDB, S3 and KMS code paths are exercised."""
+from typing import cast
+
 import boto3
 import pytest
 
@@ -144,8 +146,8 @@ def test_memory_store_has_the_same_transfer_semantics():
     store.put_customer({"customer_id": "C-1001", "name": "A", "balance": 100.0})
     with pytest.raises(InsufficientFunds):
         store.execute_transfer(_transfer(100.01))
-    assert store.get_customer("C-1001")["balance"] == 100.0 and store.list_transfers() == []
+    assert cast(dict, store.get_customer("C-1001"))["balance"] == 100.0 and store.list_transfers() == []
     store.execute_transfer(_transfer(40))
-    assert store.get_customer("C-1001")["balance"] == 60.0 and len(store.list_transfers()) == 1
+    assert cast(dict, store.get_customer("C-1001"))["balance"] == 60.0 and len(store.list_transfers()) == 1
     for name in ("adjust_balance", "record_transfer"):
         assert not hasattr(store, name) and not hasattr(AwsStore, name)
