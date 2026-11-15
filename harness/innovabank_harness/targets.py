@@ -76,10 +76,10 @@ class AwsTarget:
         import boto3
 
         raw = json.loads(pathlib.Path(outputs_file).read_text())
-        out = {k: (v["value"] if isinstance(v, dict) and "value" in v else v) for k, v in raw.items()}
         # Terraform output values are loose JSON; typed as Any so the editor
         # doesn't guess a narrower type for them.
-        self.out: dict[str, Any] = out
+        out: dict[str, Any] = {k: (v["value"] if isinstance(v, dict) and "value" in v else v) for k, v in raw.items()}
+        self.out = out
         session = boto3.Session(region_name=out["region"])
         self.cfg = Config.for_mode(
             out["mode"], out.get("controls_override") or None,
