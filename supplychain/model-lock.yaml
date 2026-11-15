@@ -1,23 +1,74 @@
+# =============================================================================
+# WHAT THIS FILE IS
+# =============================================================================
+# This is the "model lock file": the single list of every AI model, model file
+# and dataset the project is allowed to use. Think of it as a guest list. If a
+# model is not on this list, it does not get in.
+#
+# WHY IT EXISTS
+# AI models are software dependencies, and they can be attacked like any other
+# dependency: a model can be swapped for a different one, a downloaded weights
+# file can be tampered with, or a file can hide code that runs the moment it
+# is loaded. Writing down exactly what we trust, in one reviewed place, lets a
+# machine check that nothing else slipped in.
+#
+# WHO READS IT
+# - The supply chain gate (`make gate`, run in CI) uses it to:
+#     1. fail if the code or Terraform mentions a model that is not listed here,
+#     2. fail if a downloaded model file is not pinned to an exact version or
+#        does not match its recorded hash (fingerprint),
+#     3. fail if any model file is in a format that can run code when loaded.
+# - The ML-BOM generator uses it to produce sbom/ml-bom.cdx.json, an inventory
+#   of models and data that auditors and tools can read.
+#
+# HOW TO CHANGE IT
+# Adding a model means editing this file in a pull request, so every new model
+# gets a human review before it can be used.
+# =============================================================================
+
 # Model lock file. Nothing ships that is not listed here.
 # CI fails if the code or Terraform references a model outside this file, if an
 # artifact is unpinned or fails its hash, or if any artifact can execute code on load.
+
+# Format version of this file, so the tooling can tell if the layout ever changes.
 version: 1
 
+# The rules every entry below must follow. Kept separate from the entries so the
+# rules can be tightened in one place without touching each model.
 policy:
+  # Where models may come from, and which publishers on each source we trust.
+  # A source alone is not enough: anyone can upload to a public hub, so we also
+  # name the specific publishers we approve.
   allowed_sources:
     aws-bedrock: [amazon]          # source: approved publishers
+    # Empty on purpose: we do not download open weights yet, so any Hugging Face
+    # entry fails the gate until someone reviews and approves a publisher here.
     huggingface: []                # no open-weight publisher is approved yet
+  # File formats that only hold numbers (the weights). Formats like pickle are
+  # left out because they can run arbitrary code when the file is opened.
   allowed_artifact_formats: [safetensors, gguf, onnx]
+  # Branches and tags can be moved to point at new content after review; a full
+  # commit hash cannot, so we always get exactly the version that was approved.
   require_pinned_revision: true    # a full 40 character commit, never a branch or tag
 
+# Managed models: called as a service through AWS Bedrock, so there is no file
+# to download or hash. We still list them so the code cannot quietly switch to
+# an unapproved model, and so they appear in the ML-BOM inventory.
 models:
+  # The chat model that powers the "Inno" banking assistant.
   - name: agent-llm
     role: reasoning and tool use
     source: aws-bedrock
     publisher: amazon
+    # The exact model and version. The ":0" suffix pins the version so an
+    # upgrade has to be a deliberate change to this file.
     model_id: amazon.nova-lite-v1:0
+    # The code calls the model through this cross region inference profile, so
+    # it must be listed too, or the gate would flag the code's reference as unknown.
     inference_profile: us.amazon.nova-lite-v1:0
+    # Recorded so the ML-BOM shows under which terms each model is used.
     license: AWS Service Terms
+  # Turns knowledge base text into vectors so the assistant can search it.
   - name: kb-embeddings
     role: knowledge base embeddings
     source: aws-bedrock
@@ -27,9 +78,16 @@ models:
 
 # Externally sourced weights. Each entry needs: name, source, publisher, repo,
 # revision, file (relative to supplychain/artifacts), sha256, format, license.
+# Empty today because the lab only uses managed Bedrock models. The checks for
+# this section still run (and are tested), so the gate is ready the day a
+# downloaded model is added.
 artifacts: []
 
+# Data the assistant relies on. Listed so the ML-BOM covers data as well as
+# models: poisoned data is a supply chain risk just like a tampered model.
 datasets:
   - name: knowledge-base-corpus
     role: retrieval corpus for the assistant
+    # Only the public folder is declared: it is the content uploaded to the
+    # bucket's kb/public/ prefix that the assistant is allowed to read.
     path: corpus/kb/public
