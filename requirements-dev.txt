@@ -1,5 +1,25 @@
+# =============================================================================
+# requirements-dev.txt: Python packages for working on this project
+#
+# Install them with `make install` (or `pip install -r requirements-dev.txt`).
+# This is everything you need to run the tests, the offline attack bench, the
+# supply chain gate and the linter on your own machine, with no AWS account.
+# CI installs this same file, so local runs and CI behave the same way.
+# =============================================================================
+
+# Talks to AWS (DynamoDB, S3, KMS, Lambda, Bedrock). The app only loads it
+# when it really calls AWS, but the AWS tests import it directly.
 boto3>=1.35                # AWS SDK: DynamoDB, S3, KMS, Lambda and Bedrock clients
+
+# The attack catalog, benign requests and model lock are all YAML files.
 pyyaml>=6.0                # reads the attack catalog and the model lock
+
 pytest>=8.0                # runs the unit tests
+
+# Fakes the AWS services in memory, so tests are free, fast and safe to run
+# anywhere. Only the services the tests touch are installed.
 moto[dynamodb,s3,kms]>=5.0 # mocks AWS in the unit tests, so no account is needed
+
+# Pinned to an exact version: a newer ruff can add rules and make CI fail
+# on code that passed locally.
 ruff==0.17.4               # Python lint, same version as CI
