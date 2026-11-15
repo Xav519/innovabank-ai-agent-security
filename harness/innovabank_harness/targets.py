@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import pathlib
 import sys
+from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "app"))
@@ -76,7 +77,9 @@ class AwsTarget:
 
         raw = json.loads(pathlib.Path(outputs_file).read_text())
         out = {k: (v["value"] if isinstance(v, dict) and "value" in v else v) for k, v in raw.items()}
-        self.out = out
+        # Terraform output values are loose JSON; typed as Any so the editor
+        # doesn't guess a narrower type for them.
+        self.out: dict[str, Any] = out
         session = boto3.Session(region_name=out["region"])
         self.cfg = Config.for_mode(
             out["mode"], out.get("controls_override") or None,

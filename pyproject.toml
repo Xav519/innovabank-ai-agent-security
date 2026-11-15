@@ -10,6 +10,11 @@ authors = [{ name = "Xavier Dupuis" }]
 testpaths = ["tests"]
 pythonpath = ["app", "harness", "supplychain"]
 
+[tool.pyright]
+# Editor only (Pylance/pyright): same source roots as PYTHONPATH and pytest above,
+# so imports like innovabank.config resolve. Has no effect at runtime.
+extraPaths = ["app", "harness", "supplychain"]
+
 [tool.ruff]
 line-length = 120
 target-version = "py311"
