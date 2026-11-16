@@ -1,43 +1,6 @@
-<!--
-=====================================================================
-README REVIEW NOTES (delete this whole comment block when copying)
-=====================================================================
-
-FACT CHECK (2026-11-15), README.md compared with the code and results:
-  OK  26 attacks (PI x6, II x4, SD x2, RP x4, OH x2, EA x3, SL x3, UC x2) and 7 legitimate requests
-  OK  12 controls (config.py ALL_CONTROLS), 13 alarms (detections.tf), 7 Lambdas (agent, ingest, 5 tools)
-  OK  Offline: 2/26 hardened (PI-06, RP-04), 7/7 legitimate. Re-run today, regression guard passes
-  OK  Live: 10/26 vulnerable, 0/26 hardened, 6/7 vs 7/7; 9 credited to a control, RP-04 by the model, 16 also failed on vulnerable
-  OK  Ablation table matches docs/results/ablation.md
-  OK  Make targets (check-live, TRIALS, report-live, ...), images, doc links, #live-attribution anchor all exist
-  FIX "150+ unit tests": there are now 169 (166 pass, 3 skipped). Changed to "165+"
-  NOTE Python badge says 3.13 (CI and Lambda runtime), pyproject allows >=3.11. Badge kept; Try it now says 3.11+
-
-STRUCTURE CHANGES (recruiters read the first screen, engineers read the rest):
-  1. Headline numbers reordered: the live hardened result comes first, and the 9-of-26
-     attribution caveat now sits right next to the 0/26, so a technical reader sees it
-     isn't overclaimed.
-  2. New "At a glance" block for recruiters: role, stack keywords, the one-line result.
-  3. "What this demonstrates" trimmed and moved up; the skills column now reads as job skills.
-  4. New table of contents.
-  5. Results come before "Findings from live testing" (the evidence before the story). Findings
-     are tightened: each one is Problem / Fix / Lesson so they can be skimmed.
-  6. New "Tech stack" table and "Repository layout" section for engineers.
-  7. "Try it" adds prerequisites.
-  8. Author block moved into its own "About the author" section.
-  9. Title now names the project's purpose (good for GitHub search and pinned repos).
-
-KEEP WHEN COPYING (tests/test_docs.py checks these):
-  - Exactly one IB:OFFLINE-RESULTS and one IB:LIVE-RESULTS START/END marker pair
-  - The ```mermaid flowchart block
-  - No em dashes or en dashes anywhere
-  - Every relative link must point to an existing file
-=====================================================================
--->
-
 # InnovaBank: Attacking and Hardening an AI Banking Agent on AWS
 
-**A Bedrock banking agent deployed twice on AWS, once vulnerable and once hardened, then hit with 26 attacks to measure which defenses actually hold.**
+A Bedrock banking agent deployed twice on AWS, once vulnerable and once hardened, then hit with 26 attacks to measure which defenses actually hold.
 
 [![ci](https://github.com/Xav519/innovabank-ai-agent-security/actions/workflows/ci.yml/badge.svg)](https://github.com/Xav519/innovabank-ai-agent-security/actions/workflows/ci.yml)
 ![license](https://img.shields.io/badge/license-MIT-blue)
