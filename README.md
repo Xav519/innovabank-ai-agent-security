@@ -64,6 +64,23 @@ flowchart LR
     CW -.-> SNS([SNS alert])
 ```
 
+### Reading the diagram
+
+**A customer request**
+1. **Customer → Input screen:** the message is normalised, decoded, checked for injection patterns, then passed through Bedrock Guardrails.
+2. **Input screen → Nova Lite:** only a message that passes reaches the model.
+3. **Nova Lite → Policy (tool request):** the model asks for a tool call. Nothing has run yet.
+4. **Policy → tool Lambdas (allowed):** code checks ownership, payee, limit, taint lock and budget. Only approved calls reach a tool.
+5. **Tool Lambdas → Nova Lite (results):** results go back to the model. Documents are scanned, marked as data, and switch on the taint lock. Steps 3 to 5 can repeat within one turn.
+6. **Nova Lite → Output screen:** when no more tools are needed, the model's final answer goes here.
+7. **Output screen → Customer:** the answer is checked for the canary, PII, links and Guardrails violations, then sent.
+
+**Data.** Tool Lambdas read and write DynamoDB and read S3 (`kb/public` only). The model never touches either directly.
+
+**Knowledge base ingestion.** A publisher uploads a KMS-signed document to S3. The upload starts the Ingest Lambda, which checks the signature and scans the content. Clean documents are indexed in DynamoDB; the rest are quarantined.
+
+**Monitoring (dotted lines).** Every check in the agent logs a security event (`blocked`, or `observed` when its control is off). CloudWatch metric filters count them, and its 13 alarms notify through SNS.
+
 **The core idea: don't count on the model to protect itself.** The model only *proposes* tool calls. Code it cannot influence decides, using facts it cannot change: who is logged in, which payees they registered, which email is on file, and whether a document has entered the conversation. IAM then limits each tool to its own data in case that code is wrong.
 
 **Both postures run the same code.** The vulnerable one turns the controls off, puts a secret in the prompt and uses one broad IAM policy. Every check still runs and logs `observed` instead of `blocked`, so the vulnerable stack shows what *would* have been caught.
