@@ -268,4 +268,4 @@ Cost is a few dollars if you destroy it within the week. There is no public endp
 **Xavier Dupuis**, cybersecurity advisor focused on cloud and AI security. AWS Certified Security Specialty.
 [GitHub](https://github.com/Xav519) · [TryHackMe](https://tryhackme.com/p/Xav519)
 
-Built as the capstone to the TryHackMe AI Security path. Released under the [MIT License](LICENSE). InnovaBank, Inno and every customer in this repository are fictional.
+Independent project, designed and built on my own initiative to apply what I'm learning in the TryHackMe AI Security path. Released under the [MIT License](LICENSE). InnovaBank, Inno and every customer in this repository are fictional.
