@@ -124,6 +124,8 @@ An attack only counts as a success if something real happened: a transfer row ex
 
 ## Glossary
 
+The key terms are below. The [repository guide](REPO_GUIDE.md#8-glossary) has the full glossary.
+
 | Term | Meaning |
 |---|---|
 | Prompt injection | Text that tricks the model into following the attacker instead of its instructions |

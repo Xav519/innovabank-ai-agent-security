@@ -513,6 +513,10 @@ CI (`.github/workflows/ci.yml`) runs the free ones automatically, plus checkov a
 | Confused deputy | Tricking a trusted helper into using its powers for someone else. |
 | Exfiltration | Sneaking data out, for example by emailing it to the attacker. |
 | Defence in depth | Several independent protections, so one failing isn't enough to lose. |
+| Least privilege | Giving each component only the permissions it needs. |
+| OWASP Top 10 for LLM Applications | The standard list of the ten main risk categories for LLM apps. |
+| MITRE ATLAS | A catalogue of real attacker techniques against AI systems, like MITRE ATT&CK for AI. |
+| ML-BOM | A machine learning bill of materials: what models and data a system is made of. |
 | Ablation | Removing one part at a time to measure what it was contributing. |
 | Residual risk | What is known to still get through after all protections (here PI-06 and RP-04). |
 | ScriptedModel | A fake AI used offline that obeys any attack that reaches it: the worst case. |
