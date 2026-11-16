@@ -64,7 +64,7 @@ LEAK_CANARY = "IB-LEAK-CANARY-K4D9"
 # Invisible characters (zero width spaces, text direction flips, soft hyphens).
 # Attackers slip these between letters, so a hidden character inside "ignore" stops it
 # matching the word, yet the model still reads it as "ignore".
-_ZERO_WIDTH = re.compile(r"[\u200b-\u200f\u202a-\u202e\u2060-\u2064\ufeff\u00ad]")  # escaped: no invisible characters in source
+_ZERO_WIDTH = re.compile(r"[\u200b-\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff\u00ad]")  # escaped: no invisible characters in source
 # Non printing control characters. They have no place in a chat message and
 # can be used the same way to break up words.
 _CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
