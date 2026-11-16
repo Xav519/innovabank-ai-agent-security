@@ -1,12 +1,21 @@
 # REPO_GUIDE: a study guide to InnovaBank
 
-A plain-English tour of every folder and file. Everything here comes from reading the files in this repository. Where something is unclear, the guide says so instead of guessing.
+A plain-English tour of every folder and file in this repository, followed by one message and one attack traced through the code. Section 8 is a glossary for any term you don't know.
 
 ---
 
-## 1. In one paragraph
+## 1. In short
 
-InnovaBank is a fake bank with a chat assistant called "Inno". Inno is an AI agent: a large language model (an AI that reads and writes text) that can also press buttons, called tools. Inno has five tools: search the help articles, read one help article, look up an account, move money, and send an email. The project builds this same assistant twice on Amazon Web Services (AWS): once with no protections (the "vulnerable" version) and once with twelve protections switched on (the "hardened" version). Then it attacks both versions with 26 scripted attacks, plus 7 normal customer requests, and counts what actually happened: did money move, did an email leave, did a secret leak. The core idea is simple: **do not trust the AI to protect itself.** The AI is only allowed to *ask* for a tool. Ordinary code that the AI cannot influence decides whether the request is allowed, using facts the AI cannot change, like who is logged in and which payees they registered. Think of the AI as a new bank teller who might be tricked by a con artist, and the code as the vault door that only opens for the real account owner, no matter what the teller says.
+InnovaBank is a fake bank with a chat assistant called "Inno". Inno is an AI agent: a large language model (an AI that reads and writes text) that can also use **tools**. It has five: search the help articles, read one help article, look up an account, move money, and send an email.
+
+The project deploys this same assistant twice on Amazon Web Services (AWS):
+
+- **vulnerable**: all 12 protections off;
+- **hardened**: all 12 protections on.
+
+It then runs 26 scripted attacks and 7 normal customer requests against both, and checks plain facts: did money move, did an email leave, did a secret leak.
+
+The core idea: **do not trust the AI to protect itself.** The AI can only *ask* for a tool. Ordinary code, which the AI cannot influence, decides whether the request is allowed, using facts the AI cannot change (who is logged in, which payees they registered). Think of the AI as a new bank teller who might be fooled by a con artist, and the code as the vault door that only opens for the real account owner, whatever the teller says.
 
 ---
 
@@ -80,6 +89,7 @@ Third-level folders that matter, covered below: `corpus/kb/public/`, `infra/envs
 | File | What it does |
 |---|---|
 | `workflows/ci.yml` | The CI recipe. On every push it runs five jobs: (1) unit tests, the offline attack bench and the regression guard, (2) `ruff` style check, (3) `checkov` security scan of the Terraform, (4) the AI supply chain gate plus a proof that the scanner rejects a booby-trapped model file, (5) `terraform fmt` and `terraform validate`. |
+| `dependabot.yml` | Tells GitHub's Dependabot to check monthly for newer versions of the GitHub Actions used in CI. Update pull requests are turned off (limit 0) because this is a demo project. |
 
 **Why it exists:** so a mistake that weakens a protection is caught automatically, before anyone deploys it. CI ("continuous integration") means "a robot re-checks the whole project every time code changes".
 
@@ -98,7 +108,7 @@ Third-level folders that matter, covered below: `corpus/kb/public/`, `infra/envs
 | `__init__.py` | Marks the folder as a Python package. Holds the version number. |
 | `config.py` | Defines the 12 named protections ("controls") and the two presets: vulnerable = none on, hardened = all on. Also reads settings from `IB_*` environment variables in AWS. |
 | `agent.py` | The orchestrator: the main loop that handles one customer message from start to finish (check input, ask the AI, check each tool request, run tools, check the answer). |
-| `policy.py` | The tool rules. Decides if a tool request is allowed: your own account only, registered payees only, under the limit, email only to the address on file, and the "taint lock". Also holds the two budget limits (6 tool calls, 4,000 characters). The project calls this the most important file. |
+| `policy.py` | The tool rules. Decides if a tool request is allowed: your own account only, registered payees only, under the limit, email only to the address on file, and the "taint lock". Also holds the two budget limits (6 tool calls, 4,000 characters).|
 | `guards.py` | Text filters. Scans input and documents for attack phrases, decodes hidden tricks (invisible characters, base64), cleans the final answer (leaked secrets, outside links, images, unofficial phone numbers), wraps documents in "this is data" markers, and talks to Bedrock Guardrails. |
 | `prompts.py` | The two system prompts (the hidden instructions given to the AI). The vulnerable one contains a secret on purpose. The hardened one has no secret, states the trust rules, and carries a "canary" marker to detect leaks. |
 | `models.py` | The AI backends. `BedrockModel` calls the real Amazon Nova Lite model. `ScriptedModel` is a fake "fully hacked" AI used offline that obeys any attack that reaches it. Also `strip_reasoning`, which removes the AI's `<thinking>` notes before the customer sees the reply. |
@@ -152,11 +162,12 @@ Third-level folders that matter, covered below: `corpus/kb/public/`, `infra/envs
 | `threat-model.md` | What is worth protecting, who the attackers are, where the trust lines are, what still gets through. |
 | `controls.md` | Table of all 12 controls (plus per-tool IAM): what each does, where it lives, which attacks it stops alone. Also live results attribution. |
 | `deploy.md` | Step-by-step guide to deploy on AWS, including Windows (WSL, a Linux inside Windows) setup and troubleshooting. |
-| `architecture.png`, `architecture.svg` | A picture of the architecture, from the first version of the project. No page links to them: the README draws the architecture as a text-based Mermaid diagram instead. |
+
+The architecture diagram lives in the README itself, written as a text-based Mermaid diagram (a test checks it stays that way).
 
 **Why it exists:** code proves things, but people need the reasoning, the limits, and how to reproduce the results.
 
-**How it connects:** the results subfolder is written by `harness/`. `tests/test_docs.py` checks the README's links and that no document uses em or en dashes. Changing the accepted residual attacks in `tests/check_regression.py` requires updating `threat-model.md`.
+**How it connects:** the results subfolder is written by `harness/`. `tests/test_docs.py` checks that README links and images point to real files and that no document uses em or en dashes. Changing the accepted residual attacks in `tests/check_regression.py` requires updating `threat-model.md`.
 
 ### `docs/img/`
 
@@ -167,9 +178,8 @@ Third-level folders that matter, covered below: `corpus/kb/public/`, `infra/envs
 | `prompt-leak-vulnerable-vs-hardened.png` | The same "show me your system prompt" attack on both stacks. |
 | `cloudwatch-alarms.png` | AWS alarms going off during the live attack run. |
 | `cloudwatch-atlas-events.png` | Security events grouped by attack technique. |
-| `README.md` | What each screenshot shows and how to reproduce it. |
 
-**Why / connects:** visual evidence for the README, which embeds these images.
+**Why it exists / how it connects:** visual evidence from the live run. The README embeds all three images.
 
 ### `docs/results/`
 
@@ -253,7 +263,7 @@ You may also see `infra/modules/stack/.build/` appear: it holds the generated La
 
 ### `infra/envs/`, `infra/envs/vulnerable/`, `infra/envs/hardened/`
 
-**What it is:** two tiny "launch buttons". Each `main.tf` calls the shared module and sets `mode` to `vulnerable` or `hardened`. The two files differ by only three lines. Each also has a `.terraform.lock.hcl` (pins exact provider versions). After a deploy, `outputs.json` appears here (ignored by git).
+**What it is:** two tiny "launch buttons". Each `main.tf` calls the shared module and sets `mode` to `vulnerable` or `hardened`. Apart from their comments, the two files differ only in that `mode` value and a matching `Posture` tag. Each also has a `.terraform.lock.hcl` (pins exact provider versions). After a deploy, `outputs.json` appears here (ignored by git).
 
 ### `infra/account/`
 
@@ -284,6 +294,7 @@ You may also see `infra/modules/stack/.build/` appear: it holds the generated La
 | File | What it does |
 |---|---|
 | `ml-bom.cdx.json` | The list, in CycloneDX format (an industry standard): Nova Lite, Titan embeddings, and the public corpus with its fingerprint. Written by `make gate`. |
+| `README.md` | Explains the ML-BOM in plain words and how it is generated. |
 
 **Why it exists:** after an incident you need to answer "what exactly was running?".
 
@@ -368,7 +379,7 @@ Read these first, in this order.
 | # | File | Why it matters |
 |---|---|---|
 | 1 | `app/innovabank/config.py` | Shows that "vulnerable" and "hardened" are just two lists of switches over the same 12 controls. Once you get this, the whole project makes sense. |
-| 2 | `app/innovabank/agent.py` | The heart. 190 lines that take a message through input check, AI loop, tool checks, and output check. Every other app file is called from here. |
+| 2 | `app/innovabank/agent.py` | The heart. About 300 lines (many of them comments) that take a message through input check, AI loop, tool checks, and output check. Every other app file is called from here. |
 | 3 | `app/innovabank/policy.py` | The vault door. The rules the AI cannot talk its way past, including the taint lock. Short and readable. |
 | 4 | `app/innovabank/guards.py` | All the text filters: what counts as an attack phrase, what gets cleaned from answers. |
 | 5 | `app/innovabank/models.py` | Explains `ScriptedModel`, the fake hacked AI. Without understanding it, the offline results look like magic. |
@@ -513,10 +524,6 @@ CI (`.github/workflows/ci.yml`) runs the free ones automatically, plus checkov a
 | Confused deputy | Tricking a trusted helper into using its powers for someone else. |
 | Exfiltration | Sneaking data out, for example by emailing it to the attacker. |
 | Defence in depth | Several independent protections, so one failing isn't enough to lose. |
-| Least privilege | Giving each component only the permissions it needs. |
-| OWASP Top 10 for LLM Applications | The standard list of the ten main risk categories for LLM apps. |
-| MITRE ATLAS | A catalogue of real attacker techniques against AI systems, like MITRE ATT&CK for AI. |
-| ML-BOM | A machine learning bill of materials: what models and data a system is made of. |
 | Ablation | Removing one part at a time to measure what it was contributing. |
 | Residual risk | What is known to still get through after all protections (here PI-06 and RP-04). |
 | ScriptedModel | A fake AI used offline that obeys any attack that reaches it: the worst case. |
@@ -527,8 +534,8 @@ CI (`.github/workflows/ci.yml`) runs the free ones automatically, plus checkov a
 | Ground truth | Scoring on plain facts (money moved, email sent), not on opinion. |
 | Benign request | A normal, legitimate customer request. |
 | Regression guard | A check that fails if something that used to work, or used to be blocked, changes. |
-| OWASP LLM Top 10 | A standard list of the ten main risk categories for AI apps (LLM01 to LLM10). |
-| MITRE ATLAS | A catalogue of real attack techniques against AI systems, with ids like AML.T0051. |
+| OWASP Top 10 for LLM Applications | The standard list of the ten main risk categories for AI apps (LLM01 to LLM10). |
+| MITRE ATLAS | A catalogue of real attack techniques against AI systems (like MITRE ATT&CK, but for AI), with ids like AML.T0051. |
 | AWS (Amazon Web Services) | Amazon's cloud: rented computers and services. |
 | Region | A geographic AWS location, here `us-east-1`. |
 | Amazon Bedrock | The AWS service that hosts AI models you can call. |
