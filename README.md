@@ -239,7 +239,7 @@ Each attack is a few lines of YAML in [`harness/attacks/`](harness/attacks). Suc
 |---|---|---|
 | Tool policy and taint lock | Python in the orchestrator, outside the model ([`policy.py`](app/innovabank/policy.py)) | A fully hijacked model can still only do what the logged-in customer could do |
 | Least privilege per tool | 7 Lambda functions, each with its own scoped IAM role; an IAM deny is logged and attributed | Limits the damage even if the policy code has a bug |
-| Atomic transfers | Debit and transfer record in one DynamoDB transaction, balance checked inside it | A deny, throttle or crash cannot move money without a record |
+| Atomic transfers | Debit and transfer record in one DynamoDB transaction (all or nothing), balance checked inside it | A deny, throttle or crash cannot take money without recording where it went, and two transfers at once cannot spend the same balance |
 | Signed ingestion | Asymmetric KMS key (ECDSA P-256). Publishers can sign, the ingestion function can only verify | Write access to the bucket is not enough to poison the knowledge base |
 | Managed guardrail | Bedrock Guardrails on the input, on each retrieved document and on the answer | Catches reworded attacks that pattern rules miss |
 | Detection | JSON events, CloudWatch metric filters, 13 alarms tagged with ATLAS and OWASP, SNS alerts | Every alert arrives already classified. The vulnerable stack alarms too |
